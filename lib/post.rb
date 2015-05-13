@@ -1,11 +1,11 @@
 require 'nokogiri'
 require 'open-uri'
-require 'byebug'
+
 
 
 class Post
 
-  attr_reader :title, :url, :points, :item_id, :parsed_comments
+  attr_reader :title, :url, :points, :item_id, :parsed_comments, :creator
 
   def initialize
     @doc = Nokogiri::HTML(open(ARGV[0]))
@@ -23,6 +23,11 @@ class Post
   
 
   private
+
+  def get_creator
+    creator =
+    @creator = creator[0]
+  end
 
   def get_title
     title = @doc.search('.title > a:first-of-type').map { |a| a.inner_text }
