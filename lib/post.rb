@@ -1,11 +1,15 @@
 require 'nokogiri'
+require 'open-uri'
+require 'byebug'
+
 
 class Post
 
-  attr_reader :title, :url, :points, :item_id
+  attr_reader :title, :url, :points, :item_id, :parsed_comments
 
   def initialize
-    @doc = Nokogiri::HTML(File.open('../post.html'))
+    @doc = Nokogiri::HTML(open(ARGV[0]))
+    @parsed_comments = []
   end
 
   def run
@@ -14,29 +18,29 @@ class Post
     get_url
     get_id
     collect_comments
+    self
   end
   
 
   private
 
   def get_title
-    @title = @doc.search('.title > a:first-of-type').map { |a| a.inner_text }
-    @title[0]
+    title = @doc.search('.title > a:first-of-type').map { |a| a.inner_text }
+    @title = title[0]
   end
 
   def get_points
-    @points = @doc.search('.title > span:first-child').map { |span| span.inner_text }
-    @points[0]
+    @points = @doc.search('.subtext > span:first-child')[0].inner_text
   end
 
   def get_url
-    @url = @doc.search('.title > a:first-of-type').map { |link| link['href'] }
-    @url[0]
+    url = @doc.search('.title > a:first-of-type').map { |link| link['href'] }
+    @url = url[0]
   end
 
   def get_id
-    @item_id = @doc.search('.subtext > a:nth-of-type(2)').map { |a| a['href'] }
-    @item_id[0].gsub(/item?id/, '')
+    item_id = @doc.search('.subtext > a:nth-of-type(2)').map { |a| a['href'] }
+    @item_id = item_id[0].gsub(/item\?id=/, '')
   end
 
   def collect_comments
@@ -50,7 +54,6 @@ class Post
   end
 
   def store_comments(object)
-    @parsed_comments = []
     @parsed_comments << object  
   end
 
